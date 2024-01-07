@@ -3,10 +3,20 @@ import numpy as np
 from scipy.integrate import quad
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QDial, QLabel, QHBoxLayout
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QDial, QLabel, QHBoxLayout, QPushButton
 
 def gaussian_function(x, mean, variance):
     return np.exp(-((x - mean) ** 2) / (2 * variance))
+
+def tau_calculus():
+    no_w = 1.4938
+    ne_w = 1.4598
+    L = 0.5 * 1e-2      # m
+    c = 3.0e8          # m.s^-1
+
+    result = no_w * ne_w * L / (2 * c * abs(no_w - ne_w))
+    
+    return round(result*1e9, 1) # ns
 
 def correlation_coefficient(mean, variance, tau):
     # Define the range for integration
@@ -48,12 +58,16 @@ class MainWindow(QMainWindow):
 
         self.canvas = FigureCanvas(self.figure)
 
-        # Test Tau
+        # Tau Dial
         self.tau_dial = QDial()
         self.tau_dial.setMinimum(-35)
         self.tau_dial.setMaximum(35)
         self.tau_dial.valueChanged.connect(self.update_plot)
-        self.tau_label = QLabel('Tau: 0.0')
+        self.tau_label = QLabel('𝜏: 0.0')
+
+        # Push Button
+        self.tau_button = QPushButton("Set 𝜏 Value")
+        self.tau_button.clicked.connect(self.set_tau_value)
 
         main_layout = QVBoxLayout()
 
@@ -63,6 +77,7 @@ class MainWindow(QMainWindow):
         dial_layout = QHBoxLayout()
         dial_layout.addWidget(self.tau_dial)
         dial_layout.addWidget(self.tau_label)
+        dial_layout.addWidget(self.tau_button)
 
         main_layout.addLayout(plot_layout)
         main_layout.addLayout(dial_layout)
@@ -74,10 +89,15 @@ class MainWindow(QMainWindow):
 
         self.update_plot()
 
+    def set_tau_value(self):
+        tau = tau_calculus()
+        self.tau_dial.setValue(int(tau*10))
+        self.update_plot()
+
     def update_plot(self):
         # Update QLabel values
         self.tau_value = self.tau_dial.value() / 10.0  # Adjust for finer control
-        self.tau_label.setText(f'Tau: {self.tau_value:.2f}')
+        self.tau_label.setText(f'𝜏: {self.tau_value:.2f} ns')
 
         # Clear previous plot
         self.ax.cla()
@@ -90,14 +110,14 @@ class MainWindow(QMainWindow):
         g_values = gaussian_function(x_values - self.tau_value, self.mean, self.variance)  # Translate g by tau
 
         self.ax.plot(x_values, f_values, label='f(x)')
-        self.ax.plot(x_values, g_values, label=f'g(x - {self.tau_value})')
+        self.ax.plot(x_values, g_values, label=r'g(x - $\tau$)')
 
         # Calculate and display correlation coefficient
         correlation_coeff = correlation_coefficient(self.mean, self.variance, self.tau_value)
         correlation_coeff = round(correlation_coeff, 2)
 
         # Customize labels, limits, and title as needed
-        self.ax.set_xlabel('time')
+        self.ax.set_xlabel('time (ns)')
         self.ax.set_ylabel('value')
         self.ax.set_title(r'Overlap: $\gamma_{corr} =$'+ str(correlation_coeff))
 

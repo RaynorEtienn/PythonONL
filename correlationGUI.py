@@ -46,13 +46,14 @@ class MainWindow(QMainWindow):
         self.mean = 0
         self.variance = 1
         self.tau_value = 0
+        self.tau_m_value = tau_calculus()
 
         # Generate x values
         x_values = np.linspace(-5, 5, 1000)
 
         # Calculate y values for the Gaussian functions
         f_values = gaussian_function(x_values, self.mean, self.variance)
-        g_values = gaussian_function(x_values - self.tau_value, self.mean, self.variance)
+        g_values = gaussian_function(x_values - (self.tau_value - self.tau_m_value), self.mean, self.variance)
 
         self.figure, self.ax = plt.subplots()
 
@@ -66,7 +67,7 @@ class MainWindow(QMainWindow):
         self.tau_label = QLabel('𝜏: 0.0')
 
         # Push Button
-        self.tau_button = QPushButton("Set 𝜏 Value")
+        self.tau_button = QPushButton(r"Set 𝜏 at 0 -> 𝜏m value")
         self.tau_button.clicked.connect(self.set_tau_value)
 
         main_layout = QVBoxLayout()
@@ -90,8 +91,7 @@ class MainWindow(QMainWindow):
         self.update_plot()
 
     def set_tau_value(self):
-        tau = tau_calculus()
-        self.tau_dial.setValue(int(tau*10))
+        self.tau_dial.setValue(0)
         self.update_plot()
 
     def update_plot(self):
@@ -107,10 +107,10 @@ class MainWindow(QMainWindow):
 
         # Calculate y values for the Gaussian functions
         f_values = gaussian_function(x_values, self.mean, self.variance)
-        g_values = gaussian_function(x_values - self.tau_value, self.mean, self.variance)  # Translate g by tau
+        g_values = gaussian_function(x_values - (self.tau_value - self.tau_m_value), self.mean, self.variance)  # Translate g by tau
 
         self.ax.plot(x_values, f_values, label='f(x)')
-        self.ax.plot(x_values, g_values, label=r'g(x - $\tau$)')
+        self.ax.plot(x_values, g_values, label=r'g(x - ($\tau - \tau_m$))')
 
         # Calculate and display correlation coefficient
         correlation_coeff = correlation_coefficient(self.mean, self.variance, self.tau_value)

@@ -1,12 +1,16 @@
 import sys
 import numpy as np
 from scipy.integrate import quad
+
+from matplotlib import cm
+from matplotlib.colors import Normalize
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QDial, QLabel, QHBoxLayout, QPushButton
 
-def gaussian_function(x, mean, variance):
-    return np.exp(-((x - mean) ** 2) / (2 * variance))
+def gaussian_function(x, mean, variance, correlation_coefficient = 1):
+    return correlation_coefficient**2 * np.exp(-((x - mean) ** 2) / (2 * variance))
 
 def tau_calculus():
     no_w = 1.4938
@@ -40,7 +44,7 @@ def correlation_coefficient(mean, variance, tau):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Correlation Factor GUI")
+        self.setWindowTitle("Gaussian GUI")
 
         # Example parameters
         self.mean = 0
@@ -55,7 +59,8 @@ class MainWindow(QMainWindow):
         f_values = gaussian_function(x_values, self.mean, self.variance)
         g_values = gaussian_function(x_values - (self.tau_value - self.tau_m_value), self.mean, self.variance)
 
-        self.figure, self.ax = plt.subplots()
+        self.figure = plt.figure()
+        self.ax = self.figure.add_subplot(111, projection='3d')
 
         self.canvas = FigureCanvas(self.figure)
 
@@ -102,27 +107,30 @@ class MainWindow(QMainWindow):
         # Clear previous plot
         self.ax.cla()
 
-        # Generate x values
-        x_values = np.linspace(-5, 5, 1000)
-
-        # Calculate y values for the Gaussian functions
-        f_values = gaussian_function(x_values, self.mean, self.variance)
-        g_values = gaussian_function(x_values - (self.tau_value - self.tau_m_value), self.mean, self.variance)  # Translate g by tau
-
-        self.ax.plot(x_values, f_values, label='f(x)')
-        self.ax.plot(x_values, g_values, label=r'g(x - ($\tau - \tau_m$))')
-
         # Calculate and display correlation coefficient
-        correlation_coeff = correlation_coefficient(self.mean, self.variance, self.tau_value - self.tau_m_value)
+        correlation_coeff = correlation_coefficient(self.mean, self.variance, self.tau_value-self.tau_m_value)
         correlation_coeff = round(correlation_coeff, 2)
 
-        # Customize labels, limits, and title as needed
-        self.ax.set_xlabel('time (ns)')
-        self.ax.set_ylabel('value')
-        self.ax.set_title(r'Overlap: $\gamma_{corr} =$'+ str(correlation_coeff))
+        # Calculate y values for the Gaussian functions
+        
+        x_values = np.linspace(-5, 5, 1000)
 
-        # Add legend
-        self.ax.legend()
+        f_values = gaussian_function(x_values, self.mean, self.variance, correlation_coeff)
+
+        x, y = np.meshgrid(x_values, x_values)
+
+        z = correlation_coeff**2 * np.exp(-((x - self.mean) ** 2) / (2 * self.variance)) * np.exp(-((y - self.mean) ** 2) / (2 * self.variance))
+
+        self.ax.plot_wireframe(x, y, z, cmap=cm.jet, norm=Normalize(vmin=0, vmax=1))
+        self.ax.plot_surface(x, y, z, cmap=cm.jet, norm=Normalize(vmin=0, vmax=1))
+
+
+        # Customize labels, limits, and title as needed
+        self.ax.set_xlabel('x')
+        self.ax.set_ylabel('y')
+        self.ax.set_zlabel('Intensity')  
+        self.ax.set_title(r'Overlap: $\gamma_{corr} =$'+ str(correlation_coeff))
+        self.ax.set_zlim([0, 1])
 
         # Trigger the canvas to update
         self.canvas.draw()

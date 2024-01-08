@@ -39,12 +39,11 @@ variance = 1
 tau_values = np.linspace(-3.5, 3.5, 100)
 tau_m_value = tau_calculus()
 
-intensity = [correlation_coefficient(mean, variance, tau-tau_m_value)**2 for tau in tau_values]
+intensity = [correlation_coefficient(mean, variance, tau)**2 for tau in tau_values]
 
 plt.plot(tau_values, intensity, color = 'r', label = r"I($\tau$)")
-plt.axvline(tau_m_value, color = 'b', label = r"$\tau_m$", linestyle = "--")
 plt.title("Photo-diode's intensity")
-plt.xlabel(r"$\tau$")
+plt.xlabel(r"$\tau-\tau_m$ (ns)")
 plt.ylabel("Intensity")
 plt.legend()
 

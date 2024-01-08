@@ -53,7 +53,7 @@ class MainWindow(QMainWindow):
 
         # Calculate y values for the Gaussian functions
         f_values = gaussian_function(x_values, self.mean, self.variance)
-        g_values = gaussian_function(x_values - (self.tau_value - self.tau_m_value), self.mean, self.variance)
+        g_values = gaussian_function(x_values - self.tau_value, self.mean, self.variance)
 
         self.figure, self.ax = plt.subplots()
 
@@ -107,13 +107,13 @@ class MainWindow(QMainWindow):
 
         # Calculate y values for the Gaussian functions
         f_values = gaussian_function(x_values, self.mean, self.variance)
-        g_values = gaussian_function(x_values - (self.tau_value - self.tau_m_value), self.mean, self.variance)  # Translate g by tau
+        g_values = gaussian_function(x_values - self.tau_value, self.mean, self.variance)  # Translate g by tau
 
         self.ax.plot(x_values, f_values, label='f(x)')
         self.ax.plot(x_values, g_values, label=r'g(x - ($\tau - \tau_m$))')
 
         # Calculate and display correlation coefficient
-        correlation_coeff = correlation_coefficient(self.mean, self.variance, self.tau_value - self.tau_m_value)
+        correlation_coeff = correlation_coefficient(self.mean, self.variance, self.tau_value)
         correlation_coeff = round(correlation_coeff, 2)
 
         # Customize labels, limits, and title as needed

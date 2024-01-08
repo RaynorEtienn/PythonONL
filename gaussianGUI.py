@@ -108,7 +108,7 @@ class MainWindow(QMainWindow):
         self.ax.cla()
 
         # Calculate and display correlation coefficient
-        correlation_coeff = correlation_coefficient(self.mean, self.variance, self.tau_value-self.tau_m_value)
+        correlation_coeff = correlation_coefficient(self.mean, self.variance, self.tau_value)
         correlation_coeff = round(correlation_coeff, 2)
 
         # Calculate y values for the Gaussian functions

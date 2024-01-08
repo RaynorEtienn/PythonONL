@@ -99,7 +99,7 @@ class MatplotlibWidget(QWidget):
         self.ax.cla()
 
         # Plot outer ellipse
-        self.plot_ellipse(self.ne_SHG, self.ne_SHG, self.no_SHG, 'b', 0.3, r'$n$ (SHG)')
+        self.plot_ellipse(self.ne_SHG, self.ne_SHG, self.no_SHG, 'b', 0.1, r'$n$ (SHG)')
 
         # Draw the line
         self.draw_line(self.ne_SHG, self.ne_SHG, self.no_SHG, self.phi_value, self.theta_value)
